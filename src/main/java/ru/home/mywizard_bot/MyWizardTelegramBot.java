@@ -22,8 +22,7 @@ public class MyWizardTelegramBot extends TelegramWebhookBot {
     private TelegramFacade telegramFacade;
 
 
-    public MyWizardTelegramBot(DefaultBotOptions botOptions, TelegramFacade telegramFacade) {
-        super(botOptions);
+    public MyWizardTelegramBot(TelegramFacade telegramFacade) {
         this.telegramFacade = telegramFacade;
     }
 

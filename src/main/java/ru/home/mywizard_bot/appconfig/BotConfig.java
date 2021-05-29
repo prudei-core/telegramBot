@@ -22,20 +22,11 @@ public class BotConfig {
     private String botUserName;
     private String botToken;
 
-    private DefaultBotOptions.ProxyType proxyType;
-    private String proxyHost;
-    private int proxyPort;
-
     @Bean
     public MyWizardTelegramBot myWizardTelegramBot(TelegramFacade telegramFacade) {
-        DefaultBotOptions options = ApiContext
-                .getInstance(DefaultBotOptions.class);
 
-        options.setProxyHost(proxyHost);
-        options.setProxyPort(proxyPort);
-        options.setProxyType(proxyType);
 
-        MyWizardTelegramBot myWizardTelegramBot = new MyWizardTelegramBot(options, telegramFacade);
+        MyWizardTelegramBot myWizardTelegramBot = new MyWizardTelegramBot(telegramFacade);
         myWizardTelegramBot.setBotUserName(botUserName);
         myWizardTelegramBot.setBotToken(botToken);
         myWizardTelegramBot.setWebHookPath(webHookPath);

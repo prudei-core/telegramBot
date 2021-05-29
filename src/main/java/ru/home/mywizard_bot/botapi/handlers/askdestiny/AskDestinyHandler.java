@@ -51,13 +51,11 @@ public class AskDestinyHandler implements InputMessageHandler {
 
         InlineKeyboardButton buttonYes = new InlineKeyboardButton().setText("Да");
         InlineKeyboardButton buttonNo = new InlineKeyboardButton().setText("Нет, спасибо");
-        InlineKeyboardButton buttonIwillThink = new InlineKeyboardButton().setText("Я подумаю");
-        InlineKeyboardButton buttonIdontKnow = new InlineKeyboardButton().setText("Еще не определился");
+        InlineKeyboardButton buttonIdontKnow = new InlineKeyboardButton().setText("Я подумаю");
 
         //Every button must have callBackData, or else not work !
         buttonYes.setCallbackData("buttonYes");
         buttonNo.setCallbackData("buttonNo");
-        buttonIwillThink.setCallbackData("buttonIwillThink");
         buttonIdontKnow.setCallbackData("-");
 
         List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
@@ -65,7 +63,6 @@ public class AskDestinyHandler implements InputMessageHandler {
         keyboardButtonsRow1.add(buttonNo);
 
         List<InlineKeyboardButton> keyboardButtonsRow2 = new ArrayList<>();
-        keyboardButtonsRow2.add(buttonIwillThink);
         keyboardButtonsRow2.add(buttonIdontKnow);
 
 

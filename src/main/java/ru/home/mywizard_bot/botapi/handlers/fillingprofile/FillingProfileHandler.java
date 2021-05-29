@@ -10,6 +10,7 @@ import ru.home.mywizard_bot.botapi.BotState;
 import ru.home.mywizard_bot.botapi.InputMessageHandler;
 import ru.home.mywizard_bot.cache.UserDataCache;
 import ru.home.mywizard_bot.model.UserProfileData;
+import ru.home.mywizard_bot.model.UserRecordData;
 import ru.home.mywizard_bot.service.PredictionService;
 import ru.home.mywizard_bot.service.ReplyMessagesService;
 import ru.home.mywizard_bot.utils.Emojis;
@@ -55,6 +56,7 @@ public class FillingProfileHandler implements InputMessageHandler {
         long chatId = inputMsg.getChatId();
 
         UserProfileData profileData = userDataCache.getUserProfileData(userId);
+        UserRecordData recordData = userDataCache.getUserRecordData(userId);
         BotState botState = userDataCache.getUsersCurrentBotState(userId);
 
         SendMessage replyToUser = null;
@@ -71,37 +73,31 @@ public class FillingProfileHandler implements InputMessageHandler {
         }
 
         if (botState.equals(BotState.ASK_GENDER)) {
-            profileData.setAge(Integer.parseInt(usersAnswer));
+            profileData.setAge(usersAnswer);
             replyToUser = messagesService.getReplyMessage(chatId, "reply.askGender");
             replyToUser.setReplyMarkup(getGenderButtonsMarkup());
         }
 
-        if (botState.equals(BotState.ASK_NUMBER)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askNumber");
+        if (botState.equals(BotState.ASK_DATE)) {
+            replyToUser = messagesService.getReplyMessage(chatId, "reply.askDate");
             profileData.setGender(usersAnswer);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_COLOR);
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
         }
 
-        if (botState.equals(BotState.ASK_COLOR)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askColor");
-            profileData.setNumber(Integer.parseInt(usersAnswer));
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_MOVIE);
+        if (botState.equals(BotState.ASK_TIME)) {
+            replyToUser = messagesService.getReplyMessage(chatId, "reply.askTime");
+            recordData.setDate(usersAnswer);
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_SERVICE);
         }
 
-        if (botState.equals(BotState.ASK_MOVIE)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askMovie");
-            profileData.setColor(usersAnswer);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_SONG);
-        }
-
-        if (botState.equals(BotState.ASK_SONG)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askSong");
-            profileData.setMovie(usersAnswer);
+        if (botState.equals(BotState.ASK_SERVICE)) {
+            replyToUser = messagesService.getReplyMessage(chatId, "reply.askService");
+            recordData.setTime(usersAnswer);
             userDataCache.setUsersCurrentBotState(userId, BotState.PROFILE_FILLED);
         }
 
         if (botState.equals(BotState.PROFILE_FILLED)) {
-            profileData.setSong(usersAnswer);
+            recordData.setService(usersAnswer);
             userDataCache.setUsersCurrentBotState(userId, BotState.SHOW_MAIN_MENU);
 
             String profileFilledMessage = messagesService.getReplyText("reply.profileFilled",
@@ -113,6 +109,7 @@ public class FillingProfileHandler implements InputMessageHandler {
         }
 
         userDataCache.saveUserProfileData(userId, profileData);
+        userDataCache.saveUserRecordData(userId, recordData);
 
         return replyToUser;
     }
@@ -132,6 +129,53 @@ public class FillingProfileHandler implements InputMessageHandler {
 
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
         rowList.add(keyboardButtonsRow1);
+
+        inlineKeyboardMarkup.setKeyboard(rowList);
+
+        return inlineKeyboardMarkup;
+    }
+
+    private InlineKeyboardMarkup getCalendar() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+
+        InlineKeyboardButton month = new InlineKeyboardButton().setText("Май 2020");
+        InlineKeyboardButton monday = new InlineKeyboardButton().setText("Пн");
+        InlineKeyboardButton tuesday = new InlineKeyboardButton().setText("Вт");
+        InlineKeyboardButton wednesday = new InlineKeyboardButton().setText("Ср");
+        InlineKeyboardButton thursday = new InlineKeyboardButton().setText("Чт");
+        InlineKeyboardButton friday = new InlineKeyboardButton().setText("Пт");
+        InlineKeyboardButton sunday = new InlineKeyboardButton().setText("Сб");
+        InlineKeyboardButton saturday = new InlineKeyboardButton().setText("Вск");
+        //InlineKeyboardButton buttonIdontKnow = new InlineKeyboardButton().setText("Еще не определился");
+
+        //Every button must have callBackData, or else not work !
+        month.setCallbackData("buttonYes");
+        monday.setCallbackData("buttonNo");
+        tuesday.setCallbackData("buttonIwillThink");
+        wednesday.setCallbackData("buttonIwillThink");
+        thursday.setCallbackData("buttonIwillThink");
+        friday.setCallbackData("buttonIwillThink");
+        sunday.setCallbackData("buttonIwillThink");
+        saturday.setCallbackData("buttonIwillThink");
+        //buttonIdontKnow.setCallbackData("-");
+
+        List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
+        keyboardButtonsRow1.add(month);
+        //keyboardButtonsRow1.add(buttonNo);
+
+        List<InlineKeyboardButton> keyboardButtonsRow2 = new ArrayList<>();
+        keyboardButtonsRow2.add(monday);
+        keyboardButtonsRow2.add(tuesday);
+        keyboardButtonsRow2.add(wednesday);
+        keyboardButtonsRow2.add(thursday);
+        keyboardButtonsRow2.add(friday);
+        keyboardButtonsRow2.add(sunday);
+        keyboardButtonsRow2.add(saturday);
+
+
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+        rowList.add(keyboardButtonsRow1);
+        rowList.add(keyboardButtonsRow2);
 
         inlineKeyboardMarkup.setKeyboard(rowList);
 

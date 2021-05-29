@@ -37,10 +37,10 @@ public class BotStateContext {
             case ASK_NAME:
             case ASK_AGE:
             case ASK_GENDER:
-            case ASK_NUMBER:
-            case ASK_MOVIE:
+            case ASK_DATE:
+            case ASK_SERVICE:
             case ASK_SONG:
-            case ASK_COLOR:
+            case ASK_TIME:
             case FILLING_PROFILE:
             case PROFILE_FILLED:
                 return true;

@@ -15,17 +15,14 @@ import java.io.Serializable;
 public class UserProfileData implements Serializable {
     String name;
     String gender;
-    String color;
-    String movie;
-    String song;
-    int age;
-    int number;
+    String time;
+    String service;
+    String age;
+    String date;
 
 
     @Override
     public String toString() {
-        return String.format("Имя: %s%nВозраст: %d%nПол: %s%nЛюбимая цифра: %d%n" +
-                        "Цвет: %s%nФильм: %s%nПесня: %s%n", getName(), getAge(), getGender(), getNumber(),
-                getColor(), getMovie(), getSong());
+        return String.format("Имя: %s%nВозраст: %s%n", getName(), getAge(), getGender());
     }
 }

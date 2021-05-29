@@ -74,16 +74,19 @@ public class TelegramFacade {
         switch (inputMsg) {
             case "/start":
                 botState = BotState.ASK_DESTINY;
-                myWizardBot.sendPhoto(chatId, messagesService.getReplyText("reply.hello"), "static/images/wizard_logo.jpg");
+                myWizardBot.sendPhoto(chatId, messagesService.getReplyText("reply.hello"), "static/images/nail_logo.jpg");
                 break;
-            case "Получить предсказание":
+            case "Записаться":
                 botState = BotState.FILLING_PROFILE;
                 break;
-            case "Моя анкета":
-                botState = BotState.SHOW_USER_PROFILE;
+            case "Моя запись":
+                botState = BotState.SHOW_USER_RECORD;
                 break;
             case "Скачать анкету":
                 myWizardBot.sendDocument(chatId, "Ваша анкета", getUsersProfile(userId));
+                botState = BotState.SHOW_USER_RECORD;
+                break;
+            case "Мой профиль":
                 botState = BotState.SHOW_USER_PROFILE;
                 break;
             case "Помощь":
@@ -93,6 +96,8 @@ public class TelegramFacade {
                 botState = userDataCache.getUsersCurrentBotState(userId);
                 break;
         }
+
+        //botState = BotState.ASK_DESTINY;
 
         userDataCache.setUsersCurrentBotState(userId, botState);
 
@@ -113,7 +118,7 @@ public class TelegramFacade {
             callBackAnswer = new SendMessage(chatId, "Как тебя зовут ?");
             userDataCache.setUsersCurrentBotState(userId, BotState.ASK_AGE);
         } else if (buttonQuery.getData().equals("buttonNo")) {
-            callBackAnswer = sendAnswerCallbackQuery("Возвращайся, когда будешь готов", false, buttonQuery);
+            callBackAnswer = sendAnswerCallbackQuery("Возвращайтесь скорее! Мы всегда рады вас видеть", false, buttonQuery);
         } else if (buttonQuery.getData().equals("buttonIwillThink")) {
             callBackAnswer = sendAnswerCallbackQuery("Данная кнопка не поддерживается", true, buttonQuery);
         }
@@ -123,14 +128,14 @@ public class TelegramFacade {
             UserProfileData userProfileData = userDataCache.getUserProfileData(userId);
             userProfileData.setGender("М");
             userDataCache.saveUserProfileData(userId, userProfileData);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_COLOR);
-            callBackAnswer = new SendMessage(chatId, "Твоя любимая цифра");
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
         } else if (buttonQuery.getData().equals("buttonWoman")) {
             UserProfileData userProfileData = userDataCache.getUserProfileData(userId);
             userProfileData.setGender("Ж");
             userDataCache.saveUserProfileData(userId, userProfileData);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_COLOR);
-            callBackAnswer = new SendMessage(chatId, "Твоя любимая цифра");
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
 
         } else {
             userDataCache.setUsersCurrentBotState(userId, BotState.SHOW_MAIN_MENU);
