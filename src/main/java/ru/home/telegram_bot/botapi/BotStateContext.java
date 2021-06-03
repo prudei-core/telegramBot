@@ -26,7 +26,11 @@ public class BotStateContext {
 
     private InputMessageHandler findMessageHandler(BotState currentState) {
         if (isFillingProfileState(currentState)) {
-            return messageHandlers.get(BotState.FILLING_PROFILE);
+            return messageHandlers.get(BotState.FILLING_PROFILE2);
+        }
+
+        if (isFillingRecordState(currentState)) {
+            return messageHandlers.get(BotState.FILLING_RECORD);
         }
 
         return messageHandlers.get(currentState);
@@ -37,12 +41,21 @@ public class BotStateContext {
             case ASK_NAME:
             case ASK_AGE:
             case ASK_GENDER:
+            case FILLING_PROFILE2:
+            case PROFILE_FILLED2:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isFillingRecordState(BotState currentState) {
+        switch (currentState) {
             case ASK_DATE:
             case ASK_SERVICE:
-            case ASK_SONG:
             case ASK_TIME:
-            case FILLING_PROFILE:
-            case PROFILE_FILLED:
+            case FILLING_RECORD:
+            case RECORD_FILLED:
                 return true;
             default:
                 return false;

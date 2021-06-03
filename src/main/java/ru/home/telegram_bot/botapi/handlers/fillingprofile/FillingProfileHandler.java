@@ -68,59 +68,72 @@ public class FillingProfileHandler implements InputMessageHandler {
 
         SendMessage replyToUser = null;
 
-        if (botState.equals(BotState.ASK_NAME)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askName");
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_AGE);
+        boolean profileDataExist = isProfileDataExist(chatId);
+        boolean recordDataExist = isRecordDataExist(chatId);
+
+        if (!profileDataExist) {
+
+            if (botState.equals(BotState.ASK_NAME)) {
+                replyToUser = messagesService.getReplyMessage(chatId, "reply.askName");
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_AGE);
+            }
+
+            if (botState.equals(BotState.ASK_AGE)) {
+                profileData.setName(usersAnswer);
+                replyToUser = messagesService.getReplyMessage(chatId, "reply.askAge");
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_GENDER);
+            }
+
+            if (botState.equals(BotState.ASK_GENDER)) {
+                profileData.setAge(usersAnswer);
+                replyToUser = messagesService.getReplyMessage(chatId, "reply.askGender");
+                replyToUser.setReplyMarkup(getGenderButtonsMarkup());
+            }
+        } else {
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_DATE);
+            //
         }
 
-        if (botState.equals(BotState.ASK_AGE)) {
-            profileData.setName(usersAnswer);
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askAge");
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_GENDER);
-        }
+            botState = userDataCache.getUsersCurrentBotState(userId);
+            if (botState.equals(BotState.ASK_DATE)) {
+                replyToUser = messagesService.getReplyMessage(chatId, "reply.askDate");
+                profileData.setGender(usersAnswer);
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            }
 
-        if (botState.equals(BotState.ASK_GENDER)) {
-            profileData.setAge(usersAnswer);
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askGender");
-            replyToUser.setReplyMarkup(getGenderButtonsMarkup());
-        }
+            if (botState.equals(BotState.ASK_TIME)) {
+                replyToUser = messagesService.getReplyMessage(chatId, "reply.askTime");
+                recordData.setDate(usersAnswer);
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_SERVICE);
+            }
 
-        if (botState.equals(BotState.ASK_DATE)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askDate");
-            profileData.setGender(usersAnswer);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
-        }
+            if (botState.equals(BotState.ASK_SERVICE)) {
+                replyToUser = messagesService.getReplyMessage(chatId, "reply.askService");
+                recordData.setTime(usersAnswer);
+                userDataCache.setUsersCurrentBotState(userId, BotState.PROFILE_FILLED);
+            }
 
-        if (botState.equals(BotState.ASK_TIME)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askTime");
-            recordData.setDate(usersAnswer);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_SERVICE);
-        }
+            if (botState.equals(BotState.PROFILE_FILLED)) {
+                recordData.setService(usersAnswer);
+                profileData.setChatId(chatId);
+                recordData.setChatId(chatId);
 
-        if (botState.equals(BotState.ASK_SERVICE)) {
-            replyToUser = messagesService.getReplyMessage(chatId, "reply.askService");
-            recordData.setTime(usersAnswer);
-            userDataCache.setUsersCurrentBotState(userId, BotState.PROFILE_FILLED);
-        }
-
-        if (botState.equals(BotState.PROFILE_FILLED)) {
-            recordData.setService(usersAnswer);
-            profileData.setChatId(chatId);
-            recordData.setChatId(chatId);
-
-            profileDataService.saveUserProfileData(profileData);
-            recordDataService.saveUserRecordData(recordData);
+                profileDataService.saveUserProfileData(profileData);
+                recordDataService.saveUserRecordData(recordData);
 
 
-            userDataCache.setUsersCurrentBotState(userId, BotState.SHOW_MAIN_MENU);
+                userDataCache.setUsersCurrentBotState(userId, BotState.SHOW_MAIN_MENU);
 
-            String profileFilledMessage = messagesService.getReplyText("reply.profileFilled",
-                    profileData.getName(), Emojis.SPARKLES);
-            String predictionMessage = predictionService.getPrediction();
+                String profileFilledMessage = messagesService.getReplyText("reply.profileFilled",
+                        profileData.getName(), Emojis.SPARKLES);
+                String predictionMessage = predictionService.getPrediction();
 
-            replyToUser = new SendMessage(chatId, String.format("%s%n%n%s %s", profileFilledMessage, Emojis.SCROLL, predictionMessage));
-            replyToUser.setParseMode("HTML");
-        }
+                replyToUser = new SendMessage(chatId, String.format("%s%n%n%s %s", profileFilledMessage, Emojis.SCROLL, predictionMessage));
+                replyToUser.setParseMode("HTML");
+            }
+
+            userDataCache.saveUserProfileData(userId, profileData);
+            userDataCache.saveUserRecordData(userId, recordData);
 
         userDataCache.saveUserProfileData(userId, profileData);
         userDataCache.saveUserRecordData(userId, recordData);
@@ -194,6 +207,24 @@ public class FillingProfileHandler implements InputMessageHandler {
         inlineKeyboardMarkup.setKeyboard(rowList);
 
         return inlineKeyboardMarkup;
+    }
+
+    private boolean isProfileDataExist(long chatId) {
+        UserProfileData userProfileData = profileDataService.getUserProfileData(chatId);
+        if (userProfileData != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isRecordDataExist(long chatId) {
+        UserRecordData userRecordData = recordDataService.getUserRecordData(chatId);
+        if (userRecordData != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

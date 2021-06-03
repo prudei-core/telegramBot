@@ -16,6 +16,8 @@ import ru.home.telegram_bot.cache.UserDataCache;
 import ru.home.telegram_bot.model.UserProfileData;
 import ru.home.telegram_bot.service.MainMenuService;
 import ru.home.telegram_bot.service.ReplyMessagesService;
+import ru.home.telegram_bot.service.UserProfileDataService;
+import ru.home.telegram_bot.service.UserRecordDataService;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,14 +34,19 @@ public class TelegramFacade {
     private MainMenuService mainMenuService;
     private NailTelegramBot myWizardBot;
     private ReplyMessagesService messagesService;
+    UserRecordDataService recordDataService;
+    UserProfileDataService profileDataService;
 
     public TelegramFacade(BotStateContext botStateContext, UserDataCache userDataCache, MainMenuService mainMenuService,
-                          @Lazy NailTelegramBot myWizardBot, ReplyMessagesService messagesService) {
+                          @Lazy NailTelegramBot myWizardBot, ReplyMessagesService messagesService, UserRecordDataService recordDataService,
+                          UserProfileDataService profileDataService) {
         this.botStateContext = botStateContext;
         this.userDataCache = userDataCache;
         this.mainMenuService = mainMenuService;
         this.myWizardBot = myWizardBot;
         this.messagesService = messagesService;
+        this.recordDataService = recordDataService;
+        this.profileDataService = profileDataService;
     }
 
     public BotApiMethod<?> handleUpdate(Update update) {
@@ -77,7 +84,8 @@ public class TelegramFacade {
                 myWizardBot.sendPhoto(chatId, messagesService.getReplyText("reply.hello"), "static/images/nail_logo.jpg");
                 break;
             case "Записаться":
-                botState = BotState.FILLING_PROFILE;
+                //botState = BotState.FILLING_PROFILE;
+                botState = BotState.FILLING_RECORD;
                 break;
             case "Моя запись":
                 botState = BotState.SHOW_USER_RECORD;
@@ -108,6 +116,7 @@ public class TelegramFacade {
 
 
     private BotApiMethod<?> processCallbackQuery(CallbackQuery buttonQuery) {
+
         final long chatId = buttonQuery.getMessage().getChatId();
         final int userId = buttonQuery.getFrom().getId();
         BotApiMethod<?> callBackAnswer = mainMenuService.getMainMenuMessage(chatId, "Воспользуйтесь главным меню");
@@ -129,6 +138,8 @@ public class TelegramFacade {
             userProfileData.setGender("М");
             userDataCache.saveUserProfileData(userId, userProfileData);
             userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            profileDataService.saveUserProfileData(userProfileData);
+            userDataCache.saveUserProfileData(userId, userProfileData);
             callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
         } else if (buttonQuery.getData().equals("buttonWoman")) {
             UserProfileData userProfileData = userDataCache.getUserProfileData(userId);
@@ -136,6 +147,16 @@ public class TelegramFacade {
             userDataCache.saveUserProfileData(userId, userProfileData);
             userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
             callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
+            profileDataService.saveUserProfileData(userProfileData);
+            userDataCache.saveUserProfileData(userId, userProfileData);
+        } else if (buttonQuery.getData().equals("editRecord")) {
+            recordDataService.deleteRecord(chatId);
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_DATE);
+            
+        } else if (buttonQuery.getData().equals("deleteRecord")) {
+
+            recordDataService.deleteRecord(chatId);
+            callBackAnswer = new SendMessage(chatId, "Ваша запись отменена");
 
         } else {
             userDataCache.setUsersCurrentBotState(userId, BotState.SHOW_MAIN_MENU);

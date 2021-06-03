@@ -3,11 +3,16 @@ package ru.home.telegram_bot.botapi.handlers.menu;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.home.telegram_bot.botapi.BotState;
 import ru.home.telegram_bot.botapi.InputMessageHandler;
 import ru.home.telegram_bot.cache.UserDataCache;
 import ru.home.telegram_bot.model.UserRecordData;
 import ru.home.telegram_bot.service.UserRecordDataService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Component
@@ -30,8 +35,9 @@ public class ShowRecordHandler implements InputMessageHandler {
         if (recordData != null) {
             userReply = new SendMessage(message.getChatId(),
                     String.format("%s%n-------------------%n%s", "Данные по вашей записи:", recordData.toString()));
+            userReply.setReplyMarkup(getGenderButtonsMarkup());
         } else {
-            userReply = new SendMessage(message.getChatId(), "Такой анкеты в БД не существует");
+            userReply = new SendMessage(message.getChatId(), "Ваша запись отменена");
         }
         return userReply;
     }
@@ -39,5 +45,26 @@ public class ShowRecordHandler implements InputMessageHandler {
     @Override
     public BotState getHandlerName() {
         return BotState.SHOW_USER_RECORD;
+    }
+
+    private InlineKeyboardMarkup getGenderButtonsMarkup() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        InlineKeyboardButton buttonGenderMan = new InlineKeyboardButton().setText("Редактировать");
+        InlineKeyboardButton buttonGenderWoman = new InlineKeyboardButton().setText("Отменить");
+
+        //Every button must have callBackData, or else not work !
+        buttonGenderMan.setCallbackData("editRecord");
+        buttonGenderWoman.setCallbackData("deleteRecord");
+
+        List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
+        keyboardButtonsRow1.add(buttonGenderMan);
+        keyboardButtonsRow1.add(buttonGenderWoman);
+
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+        rowList.add(keyboardButtonsRow1);
+
+        inlineKeyboardMarkup.setKeyboard(rowList);
+
+        return inlineKeyboardMarkup;
     }
 }

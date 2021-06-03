@@ -26,6 +26,10 @@ public class UserRecordDataService {
         recordMongoRepository.deleteById(profileDataId);
     }
 
+    public void deleteRecord(long chatId){
+        recordMongoRepository.deleteByChatId(chatId);
+    }
+
     public UserRecordData getUserRecordData(long chatId) {
         return recordMongoRepository.findByChatId(chatId);
     }
