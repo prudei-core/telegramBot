@@ -2,6 +2,7 @@ package ru.home.telegram_bot.botapi;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
@@ -18,6 +19,7 @@ import ru.home.telegram_bot.service.MainMenuService;
 import ru.home.telegram_bot.service.ReplyMessagesService;
 import ru.home.telegram_bot.service.UserProfileDataService;
 import ru.home.telegram_bot.service.UserRecordDataService;
+import ru.home.telegram_bot.utils.Emojis;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -80,9 +82,15 @@ public class TelegramFacade {
 
         switch (inputMsg) {
             case "/start":
-                botState = BotState.ASK_DESTINY;
-                myWizardBot.sendPhoto(chatId, messagesService.getReplyText("reply.hello"), "static/images/nail_logo.jpg");
-                break;
+                boolean profileDataExist = isProfileDataExist(chatId);
+                if (profileDataExist){
+                    replyMessage = new SendMessage(chatId, "Не верная команда. Воспользуйтесь кнопками меню");
+                    return replyMessage;
+                }else {
+                    botState = BotState.ASK_RECORD;
+                    myWizardBot.sendPhoto(chatId, messagesService.getReplyText("reply.hello"), "static/images/nail_logo.jpg");
+                    break;
+                }
             case "Записаться":
                 //botState = BotState.FILLING_PROFILE;
                 botState = BotState.FILLING_RECORD;
@@ -125,7 +133,7 @@ public class TelegramFacade {
         //From Destiny choose buttons
         if (buttonQuery.getData().equals("buttonYes")) {
             callBackAnswer = new SendMessage(chatId, "Как тебя зовут ?");
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_AGE);
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_AGE_F);
         } else if (buttonQuery.getData().equals("buttonNo")) {
             callBackAnswer = sendAnswerCallbackQuery("Возвращайтесь скорее! Мы всегда рады вас видеть", false, buttonQuery);
         } else if (buttonQuery.getData().equals("buttonIwillThink")) {
@@ -137,21 +145,30 @@ public class TelegramFacade {
             UserProfileData userProfileData = userDataCache.getUserProfileData(userId);
             userProfileData.setGender("М");
             userDataCache.saveUserProfileData(userId, userProfileData);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
-            profileDataService.saveUserProfileData(userProfileData);
+            BotState botState = userDataCache.getUsersCurrentBotState(userId);
+            if (botState.equals(BotState.ASK_GENDER_F)){
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME_F);
+            } else {
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            }
             userDataCache.saveUserProfileData(userId, userProfileData);
             callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
         } else if (buttonQuery.getData().equals("buttonWoman")) {
             UserProfileData userProfileData = userDataCache.getUserProfileData(userId);
             userProfileData.setGender("Ж");
             userDataCache.saveUserProfileData(userId, userProfileData);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
-            callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
-            profileDataService.saveUserProfileData(userProfileData);
+            BotState botState = userDataCache.getUsersCurrentBotState(userId);
+            if (botState.equals(BotState.ASK_GENDER_F)){
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME_F);
+            } else {
+                userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            }
             userDataCache.saveUserProfileData(userId, userProfileData);
+            callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
         } else if (buttonQuery.getData().equals("editRecord")) {
             recordDataService.deleteRecord(chatId);
-            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_DATE);
+            userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+            callBackAnswer = new SendMessage(chatId, "Выберите свободную дату:");
             
         } else if (buttonQuery.getData().equals("deleteRecord")) {
 
@@ -190,6 +207,15 @@ public class TelegramFacade {
 
         return profileFile;
 
+    }
+
+    private boolean isProfileDataExist ( long chatId){
+        UserProfileData userProfileData = profileDataService.getUserProfileData(chatId);
+        if (userProfileData != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

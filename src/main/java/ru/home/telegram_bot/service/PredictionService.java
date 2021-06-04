@@ -19,7 +19,7 @@ public class PredictionService {
     }
 
     public String getPrediction() {
-        int predictionNumber = random.nextInt(5);
+        int predictionNumber = random.nextInt(4);
         String replyMessagePropertie = String.format("%s%d", "reply.prediction", predictionNumber);
         return messagesService.getReplyText(replyMessagePropertie);
     }

@@ -34,7 +34,7 @@ public class AskDestinyHandler implements InputMessageHandler {
 
     @Override
     public BotState getHandlerName() {
-        return BotState.ASK_DESTINY;
+        return BotState.ASK_RECORD;
     }
 
     private SendMessage processUsersInput(Message inputMsg) {

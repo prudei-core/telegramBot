@@ -26,6 +26,6 @@ public class UserProfileData implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("Имя: %s%nВозраст: %s%n", getName(), getAge(), getGender());
+        return String.format("Имя: %s%nВозраст: %s%nПол: %s%n", getName(), getAge(), getGender());
     }
 }
