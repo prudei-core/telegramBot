@@ -4,13 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import ru.home.telegram_bot.botapi.BotState;
 import ru.home.telegram_bot.botapi.InputMessageHandler;
 import ru.home.telegram_bot.cache.UserDataCache;
 import ru.home.telegram_bot.model.UserRecordData;
+import ru.home.telegram_bot.service.Calendar;
 import ru.home.telegram_bot.service.ReplyMessagesService;
 import ru.home.telegram_bot.service.UserProfileDataService;
 import ru.home.telegram_bot.service.UserRecordDataService;
+
+import java.time.YearMonth;
 
 @Slf4j
 @Component
@@ -52,8 +56,11 @@ public class FillingRecordHandler implements InputMessageHandler {
         if (!recordDataExist) {
             if (botState.equals(BotState.ASK_DATE)) {
 
-                replyToUser = messagesService.getReplyMessage(chatId, "reply.askDate");
+                //replyToUser = messagesService.getReplyMessage(chatId, "reply.askDate");
                 userDataCache.setUsersCurrentBotState(userId, BotState.ASK_TIME);
+                InlineKeyboardMarkup cal = new Calendar(YearMonth.now().getYear(), YearMonth.now().getMonthValue()).getCalendar();
+                replyToUser = new SendMessage(chatId, "Выберите дату");
+                replyToUser.setReplyMarkup(cal);
             }
 
             if (botState.equals(BotState.ASK_TIME)) {
